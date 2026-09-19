@@ -20,6 +20,8 @@ import json
 import os
 import socket
 import threading
+import time
+import traceback
 import webbrowser
 from pathlib import Path
 from typing import Any
@@ -34,6 +36,18 @@ from .server import DOWNLOADS_DIR, create_app
 
 HTTP_PORT = 53317  # arbitrary fixed default; falls back to an ephemeral
 # port if already taken, see _pick_port().
+
+
+def _startup_log(message: str) -> None:
+    """Keep packaged startup failures visible even with a windowless build."""
+    try:
+        root = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "LanDrop"
+        root.mkdir(parents=True, exist_ok=True)
+        with (root / "landrop.log").open("a", encoding="utf-8") as handle:
+            handle.write(f"{time.strftime('%Y-%m-%dT%H:%M:%S%z')} {message}\n")
+    except Exception:
+        # Startup diagnostics must never become a startup dependency.
+        pass
 
 
 def _pick_port(preferred: int) -> int:
@@ -65,7 +79,9 @@ def _make_icon_image() -> Image.Image:
 
 class TrayApp:
     def __init__(self) -> None:
+        _startup_log("TrayApp initializing")
         self.http_port = _pick_port(HTTP_PORT)
+        _startup_log(f"selected port {self.http_port}")
         self.app = create_app(None, self.http_port)
         self.device_name = self.app.state.device_name
         self.loop: asyncio.AbstractEventLoop | None = None
@@ -76,22 +92,34 @@ class TrayApp:
     # --- server + local event listener, run on a background thread ---
 
     def _run_server_thread(self) -> None:
-        self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
+        try:
+            _startup_log("server thread starting")
+            self.loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self.loop)
 
-        config = uvicorn.Config(
-            self.app, host="0.0.0.0", port=self.http_port, log_level="warning"
-        )
-        server = uvicorn.Server(config)
+            config = uvicorn.Config(
+                self.app,
+                host="0.0.0.0",
+                port=self.http_port,
+                log_level="warning",
+                # A windowed PyInstaller app has no stdout/stderr. Uvicorn's
+                # default formatter probes those streams with isatty(), which
+                # would stop the server thread before it binds its port.
+                log_config=None,
+            )
+            server = uvicorn.Server(config)
 
-        async def runner():
-            listener_task = asyncio.create_task(self._listen_local_events())
-            try:
-                await server.serve()
-            finally:
-                listener_task.cancel()
+            async def runner():
+                listener_task = asyncio.create_task(self._listen_local_events())
+                try:
+                    await server.serve()
+                finally:
+                    listener_task.cancel()
 
-        self.loop.run_until_complete(runner())
+            self.loop.run_until_complete(runner())
+            _startup_log("server thread stopped")
+        except BaseException:
+            _startup_log("server thread failed:\n" + traceback.format_exc())
 
     async def _listen_local_events(self) -> None:
         url = f"ws://127.0.0.1:{self.http_port}/ws/local"
@@ -117,8 +145,10 @@ class TrayApp:
     # --- tray icon + menu, run on the main thread ---------------------
 
     def run(self) -> None:
+        _startup_log("tray run starting")
         self.server_thread = threading.Thread(target=self._run_server_thread, daemon=True)
         self.server_thread.start()
+        _startup_log("server thread launched")
 
         menu = pystray.Menu(
             pystray.MenuItem("Open LanDrop", self._on_open_ui),
@@ -129,7 +159,9 @@ class TrayApp:
             pystray.MenuItem("Quit", self._on_quit),
         )
         self.icon = pystray.Icon("LanDrop", _make_icon_image(), "LanDrop", menu)
+        _startup_log("tray icon starting")
         self.icon.run()
+        _startup_log("tray icon stopped")
 
     def _notify(self, message: str) -> None:
         if self.icon is not None:
@@ -212,6 +244,7 @@ class TrayApp:
 
 
 def main() -> None:
+    _startup_log("tray main entered")
     TrayApp().run()
 
 
