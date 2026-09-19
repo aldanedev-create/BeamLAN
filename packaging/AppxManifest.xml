@@ -15,7 +15,7 @@
       Version="1.0.0.0" />
 
   <Properties>
-    <DisplayName>LanDrop</DisplayName>
+    <DisplayName>lan-airdrop</DisplayName>
     <PublisherDisplayName>Happy Recorder 3D</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
     <Description>Send files between devices on the same local network, instantly -- no cloud, no account, no cable.</Description>
@@ -32,7 +32,7 @@
   <Applications>
     <Application Id="LanDrop" Executable="LanDrop.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
-          DisplayName="LanDrop"
+          DisplayName="lan-airdrop"
           Description="Send files between devices on your local network."
           BackgroundColor="transparent"
           Square150x150Logo="Assets\Square150x150Logo.png"
