@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}How to use LanDrop{% endblock %}
+{% block content %}
+<section class="hero compact">
+    <p class="eyebrow">Quick tutorial</p>
+    <h1>How to use LanDrop</h1>
+    <p>Move files directly between nearby devices without an account or cloud upload.</p>
+</section>
+<section class="tutorial-grid">
+    <article class="panel tutorial-card">
+        <span class="step-number">01</span>
+        <h2>Connect devices</h2>
+        <p>Put devices on the same Wi-Fi network or connect them to the same phone hotspot. Open <a href="/ui/connect">Connect phone</a> to scan the QR code.</p>
+    </article>
+    <article class="panel tutorial-card">
+        <span class="step-number">02</span>
+        <h2>Phone to PC</h2>
+        <p>Open the LanDrop address on your phone, choose a file, and press send. The Windows app opens an approval page before saving the file.</p>
+    </article>
+    <article class="panel tutorial-card">
+        <span class="step-number">03</span>
+        <h2>PC to PC</h2>
+        <p>Open <a href="/ui/send">Send</a>, select a discovered device, choose a file, and wait for the receiver to approve it.</p>
+    </article>
+    <article class="panel tutorial-card">
+        <span class="step-number">04</span>
+        <h2>PC to phone</h2>
+        <p>From <a href="/ui/send">Send</a>, choose “Create phone share.” Scan the generated QR code on the phone and download the temporary file page.</p>
+    </article>
+</section>
+<section class="tutorial-gallery">
+    <figure class="panel tutorial-image">
+        <img src="/static/landrop-pc-transfer.png" alt="Two computers exchanging a file through LanDrop">
+        <figcaption>PC-to-PC transfer: select a nearby device and approve the file on the receiving computer.</figcaption>
+    </figure>
+    <figure class="panel tutorial-image">
+        <img src="/static/landrop-phone-qr.png" alt="A phone scanning the LanDrop QR code on a computer">
+        <figcaption>Phone onboarding: scan the QR code, then use the browser page for local transfer.</figcaption>
+    </figure>
+</section>
+<section class="panel tutorial-notes">
+    <h2>When something does not connect</h2>
+    <ul>
+        <li>Confirm every device is on the same Wi-Fi or hotspot.</li>
+        <li>Allow LanDrop through Windows Firewall on Private networks.</li>
+        <li>Use the computer's IPv4 address from <code>ipconfig</code> if QR discovery is unavailable.</li>
+        <li>Do not expose the local server to the public internet. Temporary links are intended for trusted local networks.</li>
+    </ul>
+</section>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Send a file{% endblock %}
+{% block content %}
+<section class="hero compact"><p class="eyebrow">Desktop send</p><h1>Choose a nearby device</h1><p>Select a peer, then choose a file. The receiver must approve the transfer.</p></section>
+<section class="panel">
+    <h2>Nearby devices</h2>
+    <div id="peer-list" class="peer-list" aria-live="polite"><p class="muted">Searching the local network...</p></div>
+    <form id="desktop-send-form" data-peer-send-form class="send-form">
+        <input id="desktop-file" type="file" required>
+        <button class="button primary" type="submit">Send selected file</button>
+    </form>
+    <p id="desktop-status" class="status" role="status"></p>
+</section>
+<section class="panel">
+    <p class="eyebrow">Browser receiver</p>
+    <h2>Send to a phone</h2>
+    <p class="muted">Create a one-time download page and QR code for a phone on this network.</p>
+    <form id="phone-share-form" data-phone-share-form class="send-form">
+        <input id="phone-share-file" type="file" required>
+        <button class="button secondary" type="submit">Create phone share</button>
+    </form>
+    <p id="phone-share-status" class="status" role="status"></p>
+    <div id="phone-share-result" class="share-result" hidden>
+        <img id="phone-share-qr" class="qr-code small" alt="Temporary phone transfer QR code">
+        <div>
+            <strong>Scan this code on the phone</strong>
+            <a id="phone-share-link" class="share-link" href="#"></a>
+            <p class="muted">The page expires after ten minutes and can be downloaded once.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

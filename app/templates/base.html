@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}LanDrop{% endblock %}</title>
+    <link rel="stylesheet" href="/static/landrop.css">
+    <script defer src="/static/landrop.js"></script>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">LanDrop <span>LAN file transfer</span></a>
+        <nav aria-label="Primary navigation">
+            <a href="/ui/send">Send</a>
+            <a href="/ui/connect">Connect phone</a>
+            <a href="/ui/history">History</a>
+            <a href="/ui/settings">Settings</a>
+            <a href="/ui/tutorial">Help</a>
+        </nav>
+    </header>
+    <main class="page-shell">{% block content %}{% endblock %}</main>
+    <footer>Direct device-to-device transfer. No cloud account required.</footer>
+</body>
+</html>

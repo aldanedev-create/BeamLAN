@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<section class="hero compact"><p class="eyebrow">Local configuration</p><h1>Settings</h1><p>These values are stored in your LanDrop app-data folder and survive restarts.</p></section>
+<section class="panel">
+    <form id="settings-form" data-settings-form>
+        <label>Device name<input name="device_name" value="{{ settings.device_name }}" maxlength="100" required></label>
+        <label>Download folder<input name="download_dir" value="{{ settings.download_dir }}" required></label>
+        <button class="button primary" type="submit">Save settings</button>
+    </form>
+    <p id="settings-status" class="status" role="status"></p>
+</section>
+{% endblock %}

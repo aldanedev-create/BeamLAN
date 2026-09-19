@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Receive a file{% endblock %}
+{% block content %}
+{% if share %}
+<section class="hero compact">
+    <p class="eyebrow">Temporary transfer</p>
+    <h1>Download from {{ device_name }}</h1>
+    <p>This link is private to anyone who has the QR code and expires automatically after a short time.</p>
+</section>
+<section class="panel share-card">
+    <div class="file-summary">
+        <strong>{{ share.filename }}</strong>
+        <span>{{ share.size }} bytes</span>
+    </div>
+    <a class="button primary" href="{{ download_url }}">Download file</a>
+    <p class="status">The download link works once. Scan the QR code again to create a new share.</p>
+</section>
+{% else %}
+<section class="empty-state">
+    <p class="eyebrow">Share unavailable</p>
+    <h1>This transfer expired</h1>
+    <p>Ask the sender to create a new temporary phone share.</p>
+    <a class="button secondary" href="/">Open LanDrop</a>
+</section>
+{% endif %}
+{% endblock %}

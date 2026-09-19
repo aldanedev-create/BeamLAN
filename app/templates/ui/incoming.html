@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Incoming transfer{% endblock %}
+{% block content %}
+<section class="hero compact"><p class="eyebrow">Incoming transfer</p><h1>Someone wants to send you a file</h1></section>
+<section class="panel transfer-panel" data-transfer-id="{{ transfer_id }}">
+    {% if transfer %}
+    <dl class="transfer-details"><div><dt>From</dt><dd>{{ transfer.sender_name }}</dd></div><div><dt>File</dt><dd>{{ transfer.filename }}</dd></div><div><dt>Size</dt><dd data-size="{{ transfer.size }}">{{ transfer.size }} bytes</dd></div></dl>
+    <div class="actions"><button class="button primary" data-transfer-action="accept">Accept</button><button class="button danger" data-transfer-action="decline">Decline</button></div>
+    {% else %}<p class="status error">This transfer no longer exists.</p>{% endif %}
+    <p id="incoming-status" class="status" role="status"></p>
+</section>
+{% endblock %}

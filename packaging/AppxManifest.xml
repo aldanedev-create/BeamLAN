@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Reserved Microsoft Store identity. The Publisher value must remain
+  identical to the Partner Center publisher certificate subject.
+-->
+<Package
+    xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+    xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+    xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+    IgnorableNamespaces="uap rescap">
+
+  <Identity
+      Name="HappyRecorder3D.lan-airdrop"
+      Publisher="CN=50CA2AC2-0155-44AC-B2B0-47100A3FB6E2"
+      Version="1.0.0.0" />
+
+  <Properties>
+    <DisplayName>LanDrop</DisplayName>
+    <PublisherDisplayName>Happy Recorder 3D</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <Description>
+      Send files between devices on the same local network, instantly
+      -- no cloud, no account, no cable.
+    </Description>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Applications>
+    <Application Id="LanDrop" Executable="LanDrop.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+          DisplayName="LanDrop"
+          Description="Send files between devices on your local network."
+          BackgroundColor="transparent"
+          Square150x150Logo="Assets\Square150x150Logo.png"
+          Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <!--
+      LanDrop needs local-network access for UDP broadcast discovery
+      and direct device-to-device HTTP/WebSocket transfers.
+    -->
+    <Capability Name="privateNetworkClientServer" />
+  </Capabilities>
+
+</Package>

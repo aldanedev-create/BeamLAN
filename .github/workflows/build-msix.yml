@@ -1,0 +1,102 @@
+name: Build MSIX
+
+# Builds LanDrop.exe with PyInstaller and packages it as an .msix using
+# the Windows SDK's makeappx.exe (present on the windows-latest runner
+# image as part of the bundled Visual Studio Build Tools / Windows
+# SDK -- located dynamically below rather than hardcoded, since the
+# exact SDK version on the runner image changes over time).
+#
+# This produces an installable .msix artifact on every push/PR. It
+# does NOT submit to the Microsoft Store -- that step still needs a
+# human in Partner Center (https://partner.microsoft.com/dashboard),
+# since it requires interactive account/certification steps that
+# can't be safely automated here. See README.md "Publishing" section.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  build-msix:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate placeholder icon assets
+        # Skips regenerating if real designed assets have already been
+        # committed to packaging/Assets/ -- see that script's docstring.
+        run: |
+          if (-not (Test-Path "packaging/Assets/StoreLogo.png")) {
+            python packaging/generate_placeholder_assets.py
+          }
+
+      - name: Run server and Jinax UI tests
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+        run: |
+          python -m pytest -q tests/test_server.py -p pytest_asyncio.plugin
+
+      - name: Build executable with PyInstaller
+        run: |
+          pyinstaller --onefile --windowed --name LanDrop `
+            --add-data "app/templates;app/templates" `
+            --add-data "app/static;app/static" main.py
+
+      - name: Stage MSIX package contents
+        run: |
+          New-Item -ItemType Directory -Force -Path msix_staging | Out-Null
+          Copy-Item dist/LanDrop.exe msix_staging/
+          Copy-Item packaging/AppxManifest.xml msix_staging/
+          Copy-Item -Recurse packaging/Assets msix_staging/Assets
+
+      - name: Locate makeappx.exe
+        id: find_makeappx
+        run: |
+          $candidates = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" `
+            -Recurse -Filter "makeappx.exe" -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -match "x64" }
+          if (-not $candidates) {
+            throw "makeappx.exe not found on this runner image"
+          }
+          $path = $candidates[0].FullName
+          Write-Host "Using $path"
+          echo "path=$path" >> $env:GITHUB_OUTPUT
+
+      - name: Pack MSIX
+        run: |
+          & "${{ steps.find_makeappx.outputs.path }}" pack /d msix_staging /p LanDrop.msix /overwrite
+
+      - name: Self-sign for local sideload testing
+        # Store submissions are re-signed by Microsoft on ingestion, so
+        # this step is only needed so the .msix artifact here is
+        # directly installable for local testing (sideloading requires
+        # a trusted signature or Developer Mode). Swap in a real
+        # certificate via secrets before relying on this for anything
+        # beyond smoke-testing the packaging pipeline itself.
+        run: |
+          $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=50CA2AC2-0155-44AC-B2B0-47100A3FB6E2" `
+            -KeyUsage DigitalSignature -FriendlyName "LanDrop Dev Cert" `
+            -CertStoreLocation "Cert:\CurrentUser\My" `
+            -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+          $thumbprint = $cert.Thumbprint
+          $signtool = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" `
+            -Recurse -Filter "signtool.exe" -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -match "x64" })[0].FullName
+          & $signtool sign /fd SHA256 /sha1 $thumbprint LanDrop.msix
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LanDrop-msix
+          path: LanDrop.msix
