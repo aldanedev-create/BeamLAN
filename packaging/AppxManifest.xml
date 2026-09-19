@@ -18,10 +18,7 @@
     <DisplayName>LanDrop</DisplayName>
     <PublisherDisplayName>Happy Recorder 3D</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
-    <Description>
-      Send files between devices on the same local network, instantly
-      -- no cloud, no account, no cable.
-    </Description>
+    <Description>Send files between devices on the same local network, instantly -- no cloud, no account, no cable.</Description>
   </Properties>
 
   <Dependencies>
