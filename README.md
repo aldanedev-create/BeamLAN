@@ -19,9 +19,9 @@ eventually, any device on the same WiFi with a browser).
   learn the moment the receiver accepts/declines/finishes) instead of
   polling.
 - The tray app (`app/tray.py`) is a thin Windows shell around that
-  server: it runs the server on a background thread and opens the
-  Jinax web UI for sending and accepting files. The same UI is reachable
-  from a phone browser on the LAN.
+  server: it runs the server in the background and opens the Jinax web UI
+  in an embedded desktop window. The same UI is also reachable from a
+  phone browser on the LAN.
 - The phone onboarding page (`/ui/connect`) displays the computer's LAN
   address as a QR code, so a phone can connect without typing an IP address.
 - PC-to-phone sharing creates a random, ten-minute URL under
@@ -75,7 +75,7 @@ exercised on a real Windows machine:**
 ```bash
 pip install -r requirements.txt
 python run_dev.py       # starts just the server, no tray icon, for API testing
-python main.py           # starts the full tray app (Windows only)
+python main.py           # starts the desktop window + tray app (Windows only)
 ```
 
 ## Phone tutorial

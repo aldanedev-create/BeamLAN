@@ -32,6 +32,14 @@ import uvicorn
 import websockets
 from PIL import Image, ImageDraw
 
+if os.name == "nt":
+    try:
+        import webview
+    except ImportError:  # pragma: no cover - only used by minimal source installs
+        webview = None
+else:  # pragma: no cover - the native shell is Windows-only
+    webview = None
+
 from .server import DOWNLOADS_DIR, create_app
 
 HTTP_PORT = 53317  # arbitrary fixed default; falls back to an ephemeral
@@ -86,7 +94,9 @@ class TrayApp:
         self.device_name = self.app.state.device_name
         self.loop: asyncio.AbstractEventLoop | None = None
         self.server_thread: threading.Thread | None = None
+        self.tray_thread: threading.Thread | None = None
         self.icon: pystray.Icon | None = None
+        self.window: Any | None = None
         self._opened_incoming: set[str] = set()
 
     # --- server + local event listener, run on a background thread ---
@@ -159,9 +169,52 @@ class TrayApp:
             pystray.MenuItem("Quit", self._on_quit),
         )
         self.icon = pystray.Icon("LanDrop", _make_icon_image(), "LanDrop", menu)
-        _startup_log("tray icon starting")
-        self.icon.run()
-        _startup_log("tray icon stopped")
+        # pywebview must own the process' main thread on Windows. Keep the
+        # tray event loop alive in the background while the desktop window
+        # displays the same Jinax app used by browser and phone clients.
+        self.tray_thread = threading.Thread(
+            target=self.icon.run,
+            daemon=True,
+            name="LanDropTray",
+        )
+        self.tray_thread.start()
+        _startup_log("tray thread launched")
+
+        if webview is None or os.name != "nt":
+            _startup_log("native window unavailable; opening browser fallback")
+            self._open_ui("/ui/")
+            self.tray_thread.join()
+            return
+
+        self._wait_for_server()
+        try:
+            self.window = webview.create_window(
+                "LanDrop",
+                f"http://127.0.0.1:{self.http_port}/ui/",
+                width=1120,
+                height=760,
+                min_size=(760, 560),
+                resizable=True,
+            )
+            _startup_log("native desktop window starting")
+            webview.start(debug=False)
+            _startup_log("native desktop window stopped")
+        except BaseException:
+            # WebView2 is a Windows component and may be absent on a fresh
+            # machine. Keep the app usable through the same local UI.
+            _startup_log("native desktop window failed; opening browser fallback:\n" + traceback.format_exc())
+            self._open_ui("/ui/")
+
+    def _wait_for_server(self, timeout: float = 15.0) -> None:
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            try:
+                with socket.create_connection(("127.0.0.1", self.http_port), timeout=0.25):
+                    _startup_log("server is accepting local connections")
+                    return
+            except OSError:
+                time.sleep(0.1)
+        _startup_log("server readiness timeout; opening native window anyway")
 
     def _notify(self, message: str) -> None:
         if self.icon is not None:
@@ -179,17 +232,32 @@ class TrayApp:
         webbrowser.open(f"http://127.0.0.1:{self.http_port}{path}")
 
     def _on_open_ui(self, icon, item) -> None:
-        self._open_ui("/")
+        self._show_window("/ui/")
 
     def _on_quit(self, icon, item) -> None:
         if self.loop is not None:
             self.loop.call_soon_threadsafe(self.loop.stop)
+        if self.window is not None:
+            try:
+                self.window.destroy()
+            except Exception:
+                _startup_log("native window close failed:\n" + traceback.format_exc())
         icon.stop()
 
     # --- send flow: pick file, pick peer, offer, wait for accept, upload
 
     def _on_send_file(self, icon, item) -> None:
-        self._open_ui("/ui/send")
+        self._show_window("/ui/send")
+
+    def _show_window(self, path: str) -> None:
+        if self.window is not None:
+            try:
+                self.window.load_url(f"http://127.0.0.1:{self.http_port}{path}")
+                self.window.show()
+                return
+            except Exception:
+                _startup_log("native window could not be shown:\n" + traceback.format_exc())
+        self._open_ui(path)
 
     async def _send_file_to_peer(self, path: Path, peer: dict) -> None:
         size = path.stat().st_size
