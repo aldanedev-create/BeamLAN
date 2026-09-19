@@ -12,7 +12,7 @@
   <Identity
       Name="HappyRecorder3D.lan-airdrop"
       Publisher="CN=50CA2AC2-0155-44AC-B2B0-47100A3FB6E2"
-      Version="1.0.0.0" />
+      Version="1.0.0.1" />
 
   <Properties>
     <DisplayName>lan-airdrop</DisplayName>
