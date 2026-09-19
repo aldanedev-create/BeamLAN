@@ -61,7 +61,10 @@ def _startup_log(message: str) -> None:
 def _pick_port(preferred: int) -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
-            s.bind(("127.0.0.1", preferred))
+            # Uvicorn binds all interfaces. Probe the same address so a
+            # second tray launch cannot mistake an existing LAN listener for
+            # an available port.
+            s.bind(("0.0.0.0", preferred))
             return preferred
         except OSError:
             s.bind(("127.0.0.1", 0))
