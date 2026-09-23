@@ -1,4 +1,4 @@
-# LanDrop
+# BeamLAN
 
 Send files between devices on the same local network — instantly, with no
 cloud, no account, and no cable. Think AirDrop, but for Windows (and,
