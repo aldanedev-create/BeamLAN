@@ -15,7 +15,7 @@
       Version="1.0.0.0" />
 
   <Properties>
-    <DisplayName>lan-airdrop</DisplayName>
+    <DisplayName>BeamLAN</DisplayName>
     <PublisherDisplayName>Happy Recorder 3D</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
     <Description>Send files between devices on the same local network, instantly -- no cloud, no account, no cable.</Description>
@@ -29,10 +29,14 @@
     <Resource Language="en-us" />
   </Resources>
 
+  <!--
+  LanDrop needs local-network access for UDP broadcast discovery
+  and direct device-to-device HTTP/WebSocket transfers.
+-->
   <Applications>
-    <Application Id="LanDrop" Executable="LanDrop.exe" EntryPoint="Windows.FullTrustApplication">
+    <Application Id="BeamLaN" Executable="BeamLAN.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
-          DisplayName="lan-airdrop"
+          DisplayName="BeamLAN"
           Description="Send files between devices on your local network."
           BackgroundColor="transparent"
           Square150x150Logo="Assets\Square150x150Logo.png"
