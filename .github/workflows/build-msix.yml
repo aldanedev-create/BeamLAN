@@ -1,6 +1,6 @@
 name: Build MSIX
 
-# Builds LanDrop.exe with PyInstaller and packages it as an .msix using
+# Builds BeamLAN.exe with PyInstaller and packages it as an .msix using
 # the Windows SDK's makeappx.exe (present on the windows-latest runner
 # image as part of the bundled Visual Studio Build Tools / Windows
 # SDK -- located dynamically below rather than hardcoded, since the
@@ -50,14 +50,14 @@ jobs:
 
       - name: Build executable with PyInstaller
         run: |
-          pyinstaller --onefile --windowed --name LanDrop `
+          pyinstaller --onefile --windowed --name BeamLAN `
             --add-data "app/templates;app/templates" `
             --add-data "app/static;app/static" main.py
 
       - name: Stage MSIX package contents
         run: |
           New-Item -ItemType Directory -Force -Path msix_staging | Out-Null
-          Copy-Item dist/LanDrop.exe msix_staging/
+          Copy-Item dist/BeamLAN.exe msix_staging/
           Copy-Item packaging/AppxManifest.xml msix_staging/
           Copy-Item -Recurse packaging/Assets msix_staging/Assets
 
