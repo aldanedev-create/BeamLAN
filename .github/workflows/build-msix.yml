@@ -61,6 +61,26 @@ jobs:
           Copy-Item packaging/AppxManifest.xml msix_staging/
           Copy-Item -Recurse packaging/Assets msix_staging/Assets
 
+      - name: Stamp unique package version
+        # Every .msix the Store receives must have a distinct
+        # Name_Version_Architecture_ResourceId "full name", even across
+        # unrelated pushes/PRs. packaging/AppxManifest.xml only carries
+        # the human-chosen Major.Minor (bump that yourself for real
+        # releases); this fills the Build quad field with the run
+        # number so two CI-built packages never collide on version
+        # alone, only touching the staged copy so the checked-in
+        # manifest stays untouched.
+        run: |
+          $manifestPath = "msix_staging/AppxManifest.xml"
+          $manifest = Get-Content $manifestPath -Raw
+          $stamped = $manifest -replace '\bVersion="(\d+)\.(\d+)\.\d+\.\d+"', "Version=`"`$1.`$2.$env:GITHUB_RUN_NUMBER.0`""
+          if ($stamped -eq $manifest) {
+            throw "Version attribute not found/replaced in $manifestPath"
+          }
+          Set-Content -Path $manifestPath -Value $stamped -NoNewline
+          Write-Host "Stamped version:"
+          Select-String -Path $manifestPath -Pattern 'Version="[^"]+"'
+
       - name: Locate makeappx.exe
         id: find_makeappx
         run: |
