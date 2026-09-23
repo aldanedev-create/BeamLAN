@@ -76,7 +76,7 @@ jobs:
 
       - name: Pack MSIX
         run: |
-          & "${{ steps.find_makeappx.outputs.path }}" pack /d msix_staging /p LanDrop.msix /overwrite
+          & "${{ steps.find_makeappx.outputs.path }}" pack /d msix_staging /p BeamLAN.msix /overwrite
 
       - name: Self-sign for local sideload testing
         # Store submissions are re-signed by Microsoft on ingestion, so
@@ -87,16 +87,16 @@ jobs:
         # beyond smoke-testing the packaging pipeline itself.
         run: |
           $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=50CA2AC2-0155-44AC-B2B0-47100A3FB6E2" `
-            -KeyUsage DigitalSignature -FriendlyName "LanDrop Dev Cert" `
+            -KeyUsage DigitalSignature -FriendlyName "BeamLAN Dev Cert" `
             -CertStoreLocation "Cert:\CurrentUser\My" `
             -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
           $thumbprint = $cert.Thumbprint
           $signtool = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" `
             -Recurse -Filter "signtool.exe" -ErrorAction SilentlyContinue |
             Where-Object { $_.FullName -match "x64" })[0].FullName
-          & $signtool sign /fd SHA256 /sha1 $thumbprint LanDrop.msix
+          & $signtool sign /fd SHA256 /sha1 $thumbprint BeamLAN.msix
 
       - uses: actions/upload-artifact@v4
         with:
-          name: LanDrop-msix
-          path: LanDrop.msix
+          name: BeamLAN-msix
+          path: BeamLAN.msix
