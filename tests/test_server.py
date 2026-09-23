@@ -203,7 +203,7 @@ async def test_jinax_ui_pages_render(client):
     for path in ("/", "/ui/send", "/ui/connect", "/ui/history", "/ui/settings", "/ui/tutorial"):
         response = await client.get(path)
         assert response.status_code == 200
-        assert "BeamLan" in response.text
+        assert "BeamLAN" in response.text
 
 
 @pytest.mark.asyncio
